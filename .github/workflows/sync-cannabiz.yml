@@ -1,0 +1,46 @@
+name: Sync Cannabiz Catalog
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # Every night at 3:00 AM UTC
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  sync-catalog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch latest Cannabiz catalog
+        env:
+          CANNABIZ_WC_KEY: ${{ secrets.CANNABIZ_WC_KEY }}
+          CANNABIZ_WC_SECRET: ${{ secrets.CANNABIZ_WC_SECRET }}
+        run: npx tsx scripts/ai-factory/5-fetch-cannabiz-data.ts
+
+      - name: Check for catalog changes
+        id: diff
+        run: |
+          git diff --quiet src/data/cannabiz-catalog.json && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit and push updated catalog
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/cannabiz-catalog.json
+          git commit -m "chore: auto-update Cannabiz catalog"
+          git push

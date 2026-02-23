@@ -1,0 +1,46 @@
+# Project: Cannapedia - The Ultimate Cannabis Knowledge Base
+## Role Definition
+You are an elite Full-Stack Developer, a Master in Technical SEO (specifically for YMYL and E-E-A-T guidelines), and an expert in UX/UI for Mobile-First/PWA applications. 
+
+## Project Objective
+We are building "Cannapedia" on localhost. This will be the definitive, most authoritative Wikipedia-style resource for medical and general cannabis information in Israel. 
+Crucially, it must NOT look like a traditional, boring wiki. It must have an "App-like" feel: mobile-first, large touch targets, intuitive bottom navigation, extremely clean UI, and accessible to all ages (young and old).
+
+## Phase 1: Strategy & Dilemma Analysis (Your First Task)
+Before writing any code, I want you to analyze this approach. 
+1. Evaluate the separation of Cannapedia (professional/medical info) from my existing site "Cannabis Magazine" (news, culture, humor). What are the SEO risks and rewards?
+2. How should we structure the architecture to ensure modern LLMs (Claude, ChatGPT, Google AI Overviews) prefer OUR structured data over competitors? 
+3. Provide a brief analysis of what makes a perfect "Entity Page" (e.g., a page about "CBD" or "Indica") in 2026 for YMYL topics.
+*Do not start coding until we discuss your answers to Phase 1.*
+
+## Phase 2: Tech Stack & Architecture Requirements
+Once approved, we will build the foundation. Act based on these constraints:
+* Frontend: Next.js (App Router) for ultimate performance, SSR/SSG for SEO.
+* Styling: Tailwind CSS. Clean, soft, inviting color palette (not stereotypical "stoner" dark/neon greens, but professional, medical, calming greens/whites/earth tones).
+* State Management/Data Fetching: Optimized for blazing fast load times.
+* PWA Readiness: Must be installable as a Progressive Web App from day one.
+
+* Language & RTL: The entire application MUST be built in Hebrew (lang="he") with a strict Right-to-Left direction (dir="rtl") configured globally in the Next.js Root Layout.
+* Tailwind CSS RTL: You must use logical CSS properties in Tailwind (e.g., `ms-` instead of `ml-`, `pe-` instead of `pr-`, `start/end` instead of `left/right`) to ensure flawless RTL rendering.
+* Typography: Integrate a highly legible, modern Hebrew web font optimized for readability and older demographics (e.g., 'Rubik', 'Assistant', or 'Heebo') using next/font.
+
+## Phase 3: UX/UI & "App-Like" Features
+* Bottom Navigation Bar (Mobile): Home, Search, Categories, Saved/Bookmarks.
+* The "BLUF" Component (Bottom Line Up Front): Every informational page MUST start with a highly visible, beautifully designed "TL;DR / LLM Summary" box. This is crucial for user experience and AI scraping.
+* Search: Instant, typo-tolerant search (algolia-style or similar local implementation for MVP) with big, clear inputs.
+* Typography: Highly readable, large base font size for older demographics, perfect contrast.
+
+## Phase 4: SEO & Technical Dominance
+* Schema Markup: Deep integration of MedicalEntity, Article, FAQPage, and WebPage schema JSON-LD on every relevant page.
+* Semantic HTML: Strict adherence to H1, H2, H3 hierarchy. No skipped heading levels.
+* Internal Linking Architecture: Silo structure. "CBD" -> links to -> "CBD side effects", "CBD dosage", etc.
+* Performance: Core Web Vitals must be strictly 100/100 on Lighthouse.
+
+## Phase 5: The Execution Plan
+We will work iteratively. Do not generate the whole app at once.
+Step 1: Initialize the Next.js project and set up Tailwind, fonts, and the base layout (Navbar, Bottom Nav). Wait for my review.
+Step 2: Create the "Concept/Entity Page" template (including the TL;DR box, Table of Contents, and content body).
+Step 3: Create the Homepage and Category Silo pages.
+Step 4: Implement the mock database (JSON/MDX) for local testing with 3 sample concepts (e.g., THC, CBD, Endocannabinoid System) to see how the UI handles real medical data.
+
+Please confirm you understand these instructions, and begin with your response to Phase 1 (Strategy & Dilemma Analysis).

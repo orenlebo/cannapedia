@@ -1,0 +1,322 @@
+[
+  {
+    "name": "קנבינואידים",
+    "slug": "cannabinoids",
+    "description": "חומרים פעילים בצמח הקנאביס ובגוף האדם, האחראים להשפעותיו הטיפוליות והפסיכואקטיביות. קטגוריה זו סוקרת את הקנבינואידים המרכזיים, תכונותיהם ומנגנוני פעולתם.",
+    "concepts": [
+      {
+        "name": "טטראהידרוקנאבינול (THC)",
+        "slug": "tetrahydrocannabinol-thc",
+        "medicalName": "Tetrahydrocannabinol"
+      },
+      {
+        "name": "קנאבידיול (CBD)",
+        "slug": "cannabidiol-cbd",
+        "medicalName": "Cannabidiol"
+      },
+      {
+        "name": "קנאביגרול (CBG)",
+        "slug": "cannabigerol-cbg",
+        "medicalName": "Cannabigerol"
+      },
+      {
+        "name": "קנאבינול (CBN)",
+        "slug": "cannabinol-cbn",
+        "medicalName": "Cannabinol"
+      },
+      {
+        "name": "אנדוקנבינואידים",
+        "slug": "endocannabinoids",
+        "medicalName": "Endocannabinoids"
+      }
+    ]
+  },
+  {
+    "name": "טרפנים",
+    "slug": "terpenes",
+    "description": "תרכובות ארומטיות המצויות בצמח הקנאביס, התורמות לריח, לטעם ולהשפעות הטיפוליות שלו. קטגוריה זו מפרטת את הטרפנים הנפוצים וחשיבותם הרפואית.",
+    "concepts": [
+      {
+        "name": "מירצן",
+        "slug": "myrcene",
+        "medicalName": "Myrcene"
+      },
+      {
+        "name": "לימונן",
+        "slug": "limonene",
+        "medicalName": "Limonene"
+      },
+      {
+        "name": "לינלול",
+        "slug": "linalool",
+        "medicalName": "Linalool"
+      },
+      {
+        "name": "בטא-קריופילן",
+        "slug": "beta-caryophyllene",
+        "medicalName": "Beta-Caryophyllene"
+      },
+      {
+        "name": "פינן",
+        "slug": "pinene",
+        "medicalName": "Pinene"
+      }
+    ]
+  },
+  {
+    "name": "התוויות רפואיות",
+    "slug": "medical-indications",
+    "description": "סקירת המצבים הרפואיים המוכרים על ידי משרד הבריאות בישראל לטיפול באמצעות קנאביס רפואי, בהתבסס על עדויות מחקריות.",
+    "concepts": [
+      {
+        "name": "כאב כרוני",
+        "slug": "chronic-pain",
+        "medicalName": "Chronic Pain"
+      },
+      {
+        "name": "הפרעת דחק פוסט-טראומטית (PTSD)",
+        "slug": "post-traumatic-stress-disorder-ptsd",
+        "medicalName": "Post-Traumatic Stress Disorder"
+      },
+      {
+        "name": "טרשת נפוצה",
+        "slug": "multiple-sclerosis",
+        "medicalName": "Multiple Sclerosis"
+      },
+      {
+        "name": "בחילה והקאות כתוצאה מכימותרפיה",
+        "slug": "chemotherapy-induced-nausea-and-vomiting",
+        "medicalName": "Chemotherapy-Induced Nausea and Vomiting (CINV)"
+      },
+      {
+        "name": "אפילפסיה עמידה לטיפול",
+        "slug": "treatment-resistant-epilepsy",
+        "medicalName": "Treatment-Resistant Epilepsy"
+      }
+    ]
+  },
+  {
+    "name": "דרכי מתן וצורות צריכה",
+    "slug": "routes-of-administration",
+    "description": "פירוט השיטות השונות לצריכת קנאביס רפואי, תוך הדגשת ההבדלים בספיגה, משך ההשפעה והפרופיל הטיפולי של כל דרך.",
+    "concepts": [
+      {
+        "name": "שאיפה (אידוי)",
+        "slug": "inhalation-vaporization",
+        "medicalName": "Inhalation (Vaporization)"
+      },
+      {
+        "name": "מתן תת-לשוני",
+        "slug": "sublingual-administration",
+        "medicalName": "Sublingual Administration"
+      },
+      {
+        "name": "בליעה (אוראלי)",
+        "slug": "oral-ingestion",
+        "medicalName": "Oral Ingestion"
+      },
+      {
+        "name": "יישום מקומי (טופיקלי)",
+        "slug": "topical-application",
+        "medicalName": "Topical Application"
+      },
+      {
+        "name": "אפקט המעבר הראשון",
+        "slug": "first-pass-effect",
+        "medicalName": "First-Pass Effect"
+      }
+    ]
+  },
+  {
+    "name": "זנים וכימוטיפים",
+    "slug": "cultivars-and-chemotypes",
+    "description": "הבנת ההבדלים בין זני קנאביס על בסיס הפרופיל הכימי שלהם (כימוטיפ), ולא רק על בסיס החלוקה המסורתית לאינדיקה וסאטיבה.",
+    "concepts": [
+      {
+        "name": "אינדיקה",
+        "slug": "indica",
+        "medicalName": "Cannabis indica"
+      },
+      {
+        "name": "סאטיבה",
+        "slug": "sativa",
+        "medicalName": "Cannabis sativa"
+      },
+      {
+        "name": "זנים היברידיים",
+        "slug": "hybrid-strains",
+        "medicalName": "Hybrid Strains"
+      },
+      {
+        "name": "כימוטיפ (פרופיל כימי)",
+        "slug": "chemotype",
+        "medicalName": "Chemotype"
+      },
+      {
+        "name": "אפקט הפמליה",
+        "slug": "entourage-effect",
+        "medicalName": "Entourage Effect"
+      }
+    ]
+  },
+  {
+    "name": "המערכת האנדוקנבינואידית",
+    "slug": "endocannabinoid-system",
+    "description": "מערכת ביולוגית מורכבת בגוף האדם המעורבת בוויסות תהליכים פיזיולוגיים רבים, ומהווה את מנגנון הפעולה המרכזי של קנבינואידים.",
+    "concepts": [
+      {
+        "name": "קולטן CB1",
+        "slug": "cb1-receptor",
+        "medicalName": "Cannabinoid Receptor 1"
+      },
+      {
+        "name": "קולטן CB2",
+        "slug": "cb2-receptor",
+        "medicalName": "Cannabinoid Receptor 2"
+      },
+      {
+        "name": "אנאנדמיד (AEA)",
+        "slug": "anandamide-aea",
+        "medicalName": "Anandamide (AEA)"
+      },
+      {
+        "name": "2-ארכידונואילגליצרול (2-AG)",
+        "slug": "2-arachidonoylglycerol-2-ag",
+        "medicalName": "2-Arachidonoylglycerol (2-AG)"
+      },
+      {
+        "name": "הומאוסטזיס",
+        "slug": "homeostasis",
+        "medicalName": "Homeostasis"
+      }
+    ]
+  },
+  {
+    "name": "רגולציה ואסדרה בישראל",
+    "slug": "regulation-in-israel",
+    "description": "הצגת המסגרת החוקית והרגולטורית לשימוש בקנאביס רפואי בישראל, כולל תהליך קבלת רישיון, הגורמים המפקחים והסטנדרטים הנדרשים.",
+    "concepts": [
+      {
+        "name": "היחידה לקנאביס רפואי (יק\"ר)",
+        "slug": "medical-cannabis-unit-yakar",
+        "medicalName": "Medical Cannabis Unit (Yakar)"
+      },
+      {
+        "name": "נוהל 106",
+        "slug": "procedure-106",
+        "medicalName": "Procedure 106"
+      },
+      {
+        "name": "רישיון לשימוש בקנאביס רפואי",
+        "slug": "medical-cannabis-license",
+        "medicalName": "Medical Cannabis License"
+      },
+      {
+        "name": "תקן איכות (IMC-GMP)",
+        "slug": "quality-standard-imc-gmp",
+        "medicalName": "IMC-GMP (Good Manufacturing Practice)"
+      },
+      {
+        "name": "רופא מומחה מורשה",
+        "slug": "authorized-specialist-physician",
+        "medicalName": "Authorized Specialist Physician"
+      }
+    ]
+  },
+  {
+    "name": "מחקר ופיתוח",
+    "slug": "research-and-development",
+    "description": "סקירת עולם המחקר הקליני והפרה-קליני בתחום הקנאביס הרפואי, כולל מתודולוגיות מחקר, אתגרים וכיוונים עתידיים.",
+    "concepts": [
+      {
+        "name": "ניסוי קליני מבוקר אקראי (RCT)",
+        "slug": "randomized-controlled-trial-rct",
+        "medicalName": "Randomized Controlled Trial (RCT)"
+      },
+      {
+        "name": "מחקר פרה-קליני",
+        "slug": "preclinical-research",
+        "medicalName": "Preclinical Research"
+      },
+      {
+        "name": "רפואה מבוססת ראיות (EBM)",
+        "slug": "evidence-based-medicine-ebm",
+        "medicalName": "Evidence-Based Medicine (EBM)"
+      },
+      {
+        "name": "פרמקוקינטיקה",
+        "slug": "pharmacokinetics",
+        "medicalName": "Pharmacokinetics"
+      },
+      {
+        "name": "פרמקודינמיקה",
+        "slug": "pharmacodynamics",
+        "medicalName": "Pharmacodynamics"
+      }
+    ]
+  },
+  {
+    "name": "תופעות לוואי וסיכונים",
+    "slug": "side-effects-and-risks",
+    "description": "סקירה מבוססת ראיות של תופעות הלוואי האקוטיות והכרוניות האפשריות כתוצאה משימוש בקנאביס רפואי, וכן גורמי הסיכון הנלווים.",
+    "concepts": [
+      {
+        "name": "השפעות פסיכואקטיביות",
+        "slug": "psychoactive-effects",
+        "medicalName": "Psychoactive Effects"
+      },
+      {
+        "name": "יובש בפה (קסרוסטומיה)",
+        "slug": "dry-mouth-xerostomia",
+        "medicalName": "Xerostomia"
+      },
+      {
+        "name": "סחרחורת ותת-לחץ דם תנוחתי",
+        "slug": "dizziness-orthostatic-hypotension",
+        "medicalName": "Dizziness and Orthostatic Hypotension"
+      },
+      {
+        "name": "פגיעה בזיכרון לטווח קצר",
+        "slug": "short-term-memory-impairment",
+        "medicalName": "Short-term Memory Impairment"
+      },
+      {
+        "name": "תלות וסבילות",
+        "slug": "dependence-and-tolerance",
+        "medicalName": "Dependence and Tolerance"
+      }
+    ]
+  },
+  {
+    "name": "אינטראקציות בין-תרופתיות",
+    "slug": "drug-drug-interactions",
+    "description": "בחינת ההשפעות ההדדיות בין קנבינואידים לתרופות אחרות, בעיקר דרך השפעתם על אנזימי ציטוכרום P450 בכבד.",
+    "concepts": [
+      {
+        "name": "ציטוכרום P450 (CYP450)",
+        "slug": "cytochrome-p450-cyp450",
+        "medicalName": "Cytochrome P450 (CYP450)"
+      },
+      {
+        "name": "אינטראקציה עם מדללי דם",
+        "slug": "interaction-with-anticoagulants",
+        "medicalName": "Interaction with Anticoagulants"
+      },
+      {
+        "name": "אינטראקציה עם תרופות נוגדות-פרכוסים",
+        "slug": "interaction-with-antiepileptic-drugs",
+        "medicalName": "Interaction with Antiepileptic Drugs"
+      },
+      {
+        "name": "אינטראקציה עם תרופות מדכאות מערכת העצבים המרכזית",
+        "slug": "interaction-with-cns-depressants",
+        "medicalName": "Interaction with CNS Depressants"
+      },
+      {
+        "name": "אינטראקציה פרמקודינמית",
+        "slug": "pharmacodynamic-interaction",
+        "medicalName": "Pharmacodynamic Interaction"
+      }
+    ]
+  }
+]
