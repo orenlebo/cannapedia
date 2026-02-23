@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface NavItem {
   href: string;
@@ -33,63 +34,138 @@ function SearchIcon({ className }: { className?: string }) {
   );
 }
 
-function InfoIcon({ className }: { className?: string }) {
+function MenuIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className} aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
+    </svg>
+  );
+}
+
+function CloseIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className={className} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }
 
 const navItems: NavItem[] = [
   { href: "/", label: "בית", icon: <HomeIcon className="h-6 w-6" /> },
-  {
-    href: "/categories",
-    label: "קטגוריות",
-    icon: <CategoriesIcon className="h-6 w-6" />,
-  },
-  {
-    href: "/search",
-    label: "חיפוש",
-    icon: <SearchIcon className="h-6 w-6" />,
-  },
-  { href: "/categories", label: "אודות", icon: <InfoIcon className="h-6 w-6" /> },
+  { href: "/categories", label: "קטגוריות", icon: <CategoriesIcon className="h-6 w-6" /> },
+  { href: "/search", label: "חיפוש", icon: <SearchIcon className="h-6 w-6" /> },
+];
+
+const drawerLinks = [
+  { href: "/", label: "דף הבית" },
+  { href: "/categories", label: "קטגוריות" },
+  { href: "/search", label: "חיפוש" },
+  { href: "/category/cannabinoids", label: "קנבינואידים" },
+  { href: "/category/medical-indications", label: "התוויות רפואיות" },
+  { href: "/category/terpenes", label: "טרפנים" },
+  { href: "/category/regulation-in-israel", label: "רגולציה בישראל" },
+  { href: "/about", label: "אודות" },
+  { href: "/contact", label: "יצירת קשר" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <nav aria-label="ניווט ראשי" className="fixed inset-x-0 bottom-0 z-50 border-t border-nav-border bg-nav-bg/95 backdrop-blur-sm md:hidden">
-      <div className="flex h-16 items-center justify-around">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              title={item.label}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1 text-xs font-medium transition-all duration-150 active:scale-90 ${
-                isActive
-                  ? "text-nav-active"
-                  : "text-nav-inactive hover:text-nav-active/70"
-              }`}
-            >
-              <span
-                className={`transition-transform duration-150 ${isActive ? "scale-110" : ""}`}
-              >
-                {item.icon}
-              </span>
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+    <>
+      {/* Drawer overlay */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm md:hidden"
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
+
+      {/* Drawer panel */}
+      <div
+        className={`fixed inset-y-0 start-0 z-[70] w-72 transform bg-card shadow-2xl transition-transform duration-300 ease-out md:hidden ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
+        }`}
+      >
+        <div className="flex h-14 items-center justify-between border-b border-border px-4">
+          <span className="text-lg font-bold text-primary">קנאפדיה</span>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            aria-label="סגור תפריט"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
+        </div>
+        <nav aria-label="תפריט ניווט" className="p-4">
+          <ul className="flex flex-col gap-1">
+            {drawerLinks.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+              return (
+                <li key={link.href + link.label}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setDrawerOpen(false)}
+                    className={`block rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
       </div>
-      <div className="h-[env(safe-area-inset-bottom)]" />
-    </nav>
+
+      {/* Bottom tab bar */}
+      <nav aria-label="ניווט ראשי" className="fixed inset-x-0 bottom-0 z-50 border-t border-nav-border bg-nav-bg/95 backdrop-blur-sm md:hidden">
+        <div className="flex h-16 items-center justify-around">
+          {navItems.map((item) => {
+            const isActive =
+              item.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                title={item.label}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1 text-xs font-medium transition-all duration-150 active:scale-90 ${
+                  isActive
+                    ? "text-nav-active"
+                    : "text-nav-inactive hover:text-nav-active/70"
+                }`}
+              >
+                <span className={`transition-transform duration-150 ${isActive ? "scale-110" : ""}`}>
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Menu button */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            title="עוד"
+            aria-label="פתח תפריט"
+            className="flex min-h-[48px] min-w-[48px] flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1 text-xs font-medium text-nav-inactive transition-all duration-150 hover:text-nav-active/70 active:scale-90"
+          >
+            <span><MenuIcon className="h-6 w-6" /></span>
+            <span>עוד</span>
+          </button>
+        </div>
+        <div className="h-[env(safe-area-inset-bottom)]" />
+      </nav>
+    </>
   );
 }
