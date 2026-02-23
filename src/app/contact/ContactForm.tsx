@@ -125,6 +125,19 @@ export default function ContactForm({ clientIp }: Props) {
         />
       </div>
 
+      <div className="flex items-start gap-3">
+        <input
+          id="consent"
+          name="consent"
+          type="checkbox"
+          required
+          className="mt-1 h-4 w-4 shrink-0 rounded border-border text-primary accent-primary focus:ring-primary/20"
+        />
+        <label htmlFor="consent" className="text-sm leading-6 text-muted-foreground">
+          קראתי ואני מסכים/ה ל<a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">מדיניות הפרטיות ותנאי השימוש</a> <span className="text-red-500">*</span>
+        </label>
+      </div>
+
       {status === "error" && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
           {errorMsg}
