@@ -9,6 +9,7 @@ function SearchIcon({ className }: { className?: string }) {
       strokeWidth={2}
       stroke="currentColor"
       className={className}
+      aria-hidden="true"
     >
       <path
         strokeLinecap="round"
@@ -22,12 +23,13 @@ function SearchIcon({ className }: { className?: string }) {
 export default function TopHeader() {
   return (
     <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-border bg-nav-bg/95 px-4 backdrop-blur-sm">
-      <Link href="/" className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2" title="קנאפדיה — דף הבית">
         <span className="text-xl font-bold text-primary">קנאפדיה</span>
       </Link>
       <Link
         href="/search"
         aria-label="חיפוש"
+        title="חיפוש באנציקלופדיה"
         className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         <SearchIcon className="h-6 w-6" />

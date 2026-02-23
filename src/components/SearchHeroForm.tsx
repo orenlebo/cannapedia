@@ -18,8 +18,10 @@ export default function SearchHeroForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative mx-auto max-w-lg">
+    <form onSubmit={handleSubmit} className="relative mx-auto max-w-lg" role="search" aria-label="חיפוש באנציקלופדיה">
+      <label htmlFor="hero-search" className="sr-only">חיפוש באנציקלופדיה</label>
       <input
+        id="hero-search"
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -33,6 +35,7 @@ export default function SearchHeroForm() {
         strokeWidth={2}
         stroke="currentColor"
         className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"

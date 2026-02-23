@@ -25,19 +25,29 @@ export async function generateMetadata({
   const concept = getConceptBySlug(slug);
   if (!concept) return { title: `לא נמצא | ${SITE_NAME}` };
 
+  const pageTitle = concept.title;
+  const pageDesc = concept.schema.description;
+  const pageUrl = `${BASE_URL}/concept/${slug}`;
+
   return {
-    title: `${concept.title} | ${SITE_NAME}`,
-    description: concept.schema.description,
+    title: pageTitle,
+    description: pageDesc,
     openGraph: {
-      title: `${concept.title} | ${SITE_NAME}`,
-      description: concept.schema.description,
+      title: `${pageTitle} | ${SITE_NAME}`,
+      description: pageDesc,
       type: "article",
       locale: "he_IL",
       siteName: SITE_NAME,
-      url: `${BASE_URL}/concept/${slug}`,
+      url: pageUrl,
+    },
+    twitter: {
+      card: "summary",
+      title: `${pageTitle} | ${SITE_NAME}`,
+      description: pageDesc,
     },
     alternates: {
-      canonical: `${BASE_URL}/concept/${slug}`,
+      canonical: pageUrl,
+      languages: { "he-IL": pageUrl },
     },
   };
 }
@@ -72,9 +82,8 @@ function buildJsonLd(concept: ConceptData) {
         name: s,
       })),
     },
-    lastReviewed: concept.bluf.lastUpdated
-      ? undefined
-      : new Date().toISOString().split("T")[0],
+    lastReviewed: concept.bluf.lastUpdated || undefined,
+    dateModified: concept.bluf.lastUpdated || undefined,
     mainContentOfPage: {
       "@type": "WebPageElement",
       cssSelector: "article",

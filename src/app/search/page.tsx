@@ -5,8 +5,20 @@ import SearchClient from "./SearchClient";
 import type { SearchableConcept } from "./SearchClient";
 
 export const metadata: Metadata = {
-  title: "חיפוש | קנאפדיה",
+  title: "חיפוש",
   description: "חיפוש מידע רפואי ומדעי על קנאביס רפואי בישראל",
+  openGraph: {
+    title: "חיפוש | קנאפדיה",
+    description: "חיפוש מידע רפואי ומדעי על קנאביס רפואי בישראל",
+    type: "website",
+    locale: "he_IL",
+    siteName: "קנאפדיה",
+    url: "https://cannapedia.co.il/search",
+  },
+  alternates: {
+    canonical: "https://cannapedia.co.il/search",
+  },
+  robots: { index: false, follow: true },
 };
 
 export default function SearchPage() {

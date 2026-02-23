@@ -25,8 +25,10 @@ export async function generateMetadata({
   const category = getCategoryBySlug(slug);
   if (!category) return { title: `לא נמצא | ${SITE_NAME}` };
 
+  const pageUrl = `${BASE_URL}/category/${slug}`;
+
   return {
-    title: `${category.name} | ${SITE_NAME}`,
+    title: category.name,
     description: category.description,
     openGraph: {
       title: `${category.name} | ${SITE_NAME}`,
@@ -34,10 +36,16 @@ export async function generateMetadata({
       type: "website",
       locale: "he_IL",
       siteName: SITE_NAME,
-      url: `${BASE_URL}/category/${slug}`,
+      url: pageUrl,
+    },
+    twitter: {
+      card: "summary",
+      title: `${category.name} | ${SITE_NAME}`,
+      description: category.description,
     },
     alternates: {
-      canonical: `${BASE_URL}/category/${slug}`,
+      canonical: pageUrl,
+      languages: { "he-IL": pageUrl },
     },
   };
 }

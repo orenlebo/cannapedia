@@ -2,10 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAllCategories, getConceptsByCategory } from "@/data/concepts";
 
+const SITE_NAME = "קנאפדיה";
+const BASE_URL = "https://cannapedia.co.il";
+
 export const metadata: Metadata = {
-  title: "קטגוריות | קנאפדיה",
+  title: "קטגוריות",
   description:
     "כל הקטגוריות באנציקלופדיית קנאפדיה — קנבינואידים, מצבים רפואיים, זנים, דרכי מתן ועוד.",
+  openGraph: {
+    title: `קטגוריות | ${SITE_NAME}`,
+    description:
+      "כל הקטגוריות באנציקלופדיית קנאפדיה — קנבינואידים, מצבים רפואיים, זנים, דרכי מתן ועוד.",
+    type: "website",
+    locale: "he_IL",
+    siteName: SITE_NAME,
+    url: `${BASE_URL}/categories`,
+  },
+  twitter: {
+    card: "summary",
+    title: `קטגוריות | ${SITE_NAME}`,
+    description:
+      "כל הקטגוריות באנציקלופדיית קנאפדיה — קנבינואידים, מצבים רפואיים, זנים, דרכי מתן ועוד.",
+  },
+  alternates: {
+    canonical: `${BASE_URL}/categories`,
+    languages: { "he-IL": `${BASE_URL}/categories` },
+  },
 };
 
 export default function CategoriesPage() {

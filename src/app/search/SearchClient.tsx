@@ -132,8 +132,10 @@ export default function SearchClient({ concepts }: Props) {
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="mb-4 text-2xl font-bold text-foreground">חיפוש</h1>
-        <div className="relative">
+        <div className="relative" role="search" aria-label="חיפוש באנציקלופדיה">
+          <label htmlFor="search-input" className="sr-only">חיפוש באנציקלופדיה</label>
           <input
+            id="search-input"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -148,6 +150,7 @@ export default function SearchClient({ concepts }: Props) {
             strokeWidth={2}
             stroke="currentColor"
             className="pointer-events-none absolute start-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
