@@ -59,20 +59,50 @@ function buildHomepageJsonLd() {
   };
 }
 
+const FEATURED_SLUGS = [
+  "thc",
+  "cbd",
+  "cbg",
+  "cbn",
+  "endocannabinoid-system",
+  "terpenes",
+  "indica-vs-sativa",
+  "entourage-effect",
+  "chronic-pain",
+  "medical-cannabis-license-israel",
+  "vaporization",
+  "myrcene",
+];
+
 export default function Home() {
-  const concepts = getAllConcepts();
+  const allConcepts = getAllConcepts();
   const categories = getAllCategories().map((cat) => ({
     ...cat,
     count: getConceptsByCategory(cat.slug).length,
   }));
 
-  const conceptCards = concepts.map((c) => ({
-    slug: c.slug,
-    title: c.title,
-    subtitle: c.subtitle,
-    category: c.category,
-    categorySlug: c.categorySlug,
-    needsHumanReview: c.needsHumanReview,
+  const slugSet = new Set(FEATURED_SLUGS);
+  const featured = FEATURED_SLUGS
+    .map((slug) => allConcepts.find((c) => c.slug === slug))
+    .filter(Boolean);
+
+  if (featured.length < 12) {
+    for (const c of allConcepts) {
+      if (featured.length >= 12) break;
+      if (!slugSet.has(c.slug) && !c.needsHumanReview) {
+        featured.push(c);
+        slugSet.add(c.slug);
+      }
+    }
+  }
+
+  const conceptCards = featured.map((c) => ({
+    slug: c!.slug,
+    title: c!.title,
+    subtitle: c!.subtitle,
+    category: c!.category,
+    categorySlug: c!.categorySlug,
+    needsHumanReview: c!.needsHumanReview,
   }));
 
   const jsonLd = buildHomepageJsonLd();
@@ -93,7 +123,7 @@ export default function Home() {
         <SearchHeroForm />
       </section>
 
-      <HomeClient categories={categories} concepts={conceptCards} />
+      <HomeClient categories={categories} concepts={conceptCards} totalConcepts={allConcepts.length} />
     </div>
   );
 }

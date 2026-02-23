@@ -23,6 +23,7 @@ interface ConceptCard {
 interface Props {
   categories: CategoryCard[];
   concepts: ConceptCard[];
+  totalConcepts: number;
 }
 
 const stagger = {
@@ -35,7 +36,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } },
 };
 
-export default function HomeClient({ categories, concepts }: Props) {
+export default function HomeClient({ categories, concepts, totalConcepts }: Props) {
   return (
     <>
       <section>
@@ -74,9 +75,14 @@ export default function HomeClient({ categories, concepts }: Props) {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-bold text-foreground">
-          מושגים מובילים
-        </h2>
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="text-xl font-bold text-foreground">
+            מושגים נבחרים
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {totalConcepts} ערכים באנציקלופדיה
+          </span>
+        </div>
         <motion.div
           className="flex flex-col gap-3"
           variants={stagger}
@@ -87,6 +93,7 @@ export default function HomeClient({ categories, concepts }: Props) {
             <motion.div key={concept.slug} variants={fadeUp}>
               <Link
                 href={`/concept/${concept.slug}`}
+                title={concept.title}
                 className="group block rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 active:scale-[0.98] hover:border-primary/30 hover:shadow-md"
               >
                 <div className="mb-2 flex items-center justify-between">
@@ -104,6 +111,16 @@ export default function HomeClient({ categories, concepts }: Props) {
             </motion.div>
           ))}
         </motion.div>
+        <div className="mt-6 text-center">
+          <Link
+            href="/search"
+            title="חיפוש בכל הערכים"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.97]"
+          >
+            חיפוש בכל {totalConcepts} הערכים
+            <span aria-hidden="true">←</span>
+          </Link>
+        </div>
       </section>
     </>
   );

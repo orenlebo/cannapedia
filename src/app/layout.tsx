@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import TopHeader from "@/components/TopHeader";
 import BottomNav from "@/components/BottomNav";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const rubik = Rubik({
@@ -72,9 +73,10 @@ export default function RootLayout({
     <html lang="he" dir="rtl">
       <body className={`${rubik.variable} font-sans antialiased`}>
         <TopHeader />
-        <main className="mx-auto min-h-screen max-w-3xl px-4 pb-20 pt-4">
+        <main className="mx-auto min-h-screen max-w-3xl px-4 pb-8 pt-4">
           {children}
         </main>
+        <Footer />
         <BottomNav />
       </body>
     </html>
