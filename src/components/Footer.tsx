@@ -4,6 +4,7 @@ const footerLinks = [
   { href: "/categories", label: "קטגוריות" },
   { href: "/search", label: "חיפוש" },
   { href: "/about", label: "אודות" },
+  { href: "/contact", label: "יצירת קשר" },
 ];
 
 const categoryLinks = [

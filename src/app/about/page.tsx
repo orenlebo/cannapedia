@@ -72,20 +72,21 @@ export default function AboutPage() {
       <section className="mt-8">
         <h2 className="mb-3 text-2xl font-bold text-foreground">יצירת קשר</h2>
         <p className="leading-8 text-muted-foreground">
-          לשאלות, הערות או דיווח על אי-דיוקים, ניתן לפנות אלינו בדוא&quot;ל:{" "}
-          <a
-            href="mailto:info@cannapedia.co.il"
-            className="font-medium text-primary hover:underline"
-          >
-            info@cannapedia.co.il
-          </a>
+          לשאלות, הערות, דיווח על אי-דיוקים או הצעות לשיפור —
+          מוזמנים לפנות אלינו דרך טופס יצירת הקשר.
         </p>
       </section>
 
-      <div className="mt-10 text-center">
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
+        <Link
+          href="/contact"
+          className="inline-flex rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
+        >
+          יצירת קשר
+        </Link>
         <Link
           href="/"
-          className="inline-flex rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 active:scale-[0.97]"
+          className="inline-flex rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.97]"
         >
           חזרה לדף הבית
         </Link>
