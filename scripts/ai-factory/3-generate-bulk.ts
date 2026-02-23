@@ -1,15 +1,13 @@
 /**
- * Bulk Concept Generator v2 — Queue-driven, crash-resilient.
- *
- * Reads from concept-queue.json, generates content using the same quality
- * pipeline as 2-generate-concept.ts (aliases, two-tier RAG, strict prompts),
- * and persists progress after every concept.
+ * Bulk Concept Generator v3 — Queue-driven, crash-resilient.
+ * Now includes multi-source retrieval, fact-checking, and review workflow.
  *
  * Usage:
  *   npx tsx scripts/ai-factory/3-generate-bulk.ts --batch 20
  *   npx tsx scripts/ai-factory/3-generate-bulk.ts --batch 50 --category terpenes
  *   npx tsx scripts/ai-factory/3-generate-bulk.ts --retry-failed
  *   npx tsx scripts/ai-factory/3-generate-bulk.ts --status
+ *   npx tsx scripts/ai-factory/3-generate-bulk.ts --batch 10 --skip-verify
  *
  * Flags:
  *   --batch <n>       Max concepts to process (default: 10)
@@ -17,6 +15,7 @@
  *   --delay <seconds> Delay between concepts (default: 15)
  *   --retry-failed    Include failed items (up to maxAttempts)
  *   --status          Print queue summary and exit
+ *   --skip-verify     Skip fact-checking step
  *
  * Requires GEMINI_API_KEY in .env.local
  */
@@ -26,12 +25,18 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { retrieve, formatContextForPrompt } from "./rag-retriever";
+import { fetchWikipediaContext } from "./wiki-fetcher";
+import { fetchGoogleSearchContext } from "./google-fetcher";
+import { fetchLiveMagazineContext } from "./live-magazine-fetcher";
+import { factCheck } from "./fact-checker";
+import { notifyReview } from "./review-notifier";
 import {
   MODEL,
   CATEGORY_HEBREW,
   generateSearchAliases,
   SYSTEM_INSTRUCTION,
   buildPrompt,
+  buildCombinedContext,
   slugify,
 } from "./shared";
 
@@ -46,10 +51,6 @@ if (!API_KEY || API_KEY === "your_key_here") {
 const QUEUE_PATH = path.join(__dirname, "concept-queue.json");
 const CONTENT_DIR = path.join(__dirname, "../../src/data/content");
 const MAX_ATTEMPTS = 3;
-
-// ---------------------------------------------------------------------------
-// CLI flags
-// ---------------------------------------------------------------------------
 
 const args = process.argv.slice(2);
 
@@ -70,10 +71,7 @@ const delaySeconds = getFlag("--delay", 15);
 const categoryFilter = getStringFlag("--category");
 const retryFailed = args.includes("--retry-failed");
 const statusOnly = args.includes("--status");
-
-// ---------------------------------------------------------------------------
-// Queue types and helpers
-// ---------------------------------------------------------------------------
+const skipVerify = args.includes("--skip-verify");
 
 interface QueueConcept {
   name: string;
@@ -118,10 +116,6 @@ function progressBar(current: number, total: number, width = 30): string {
   return `${"█".repeat(filled)}${"░".repeat(empty)} ${current}/${total} (${Math.round(pct * 100)}%)`;
 }
 
-// ---------------------------------------------------------------------------
-// Status command
-// ---------------------------------------------------------------------------
-
 function printStatus(queue: QueueFile): void {
   const pending = queue.concepts.filter((c) => c.status === "pending").length;
   const completed = queue.concepts.filter((c) => c.status === "completed").length;
@@ -159,10 +153,6 @@ function printStatus(queue: QueueFile): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Main generation loop
-// ---------------------------------------------------------------------------
-
 async function main() {
   const queue = loadQueue();
 
@@ -172,16 +162,16 @@ async function main() {
   }
 
   console.log("╔══════════════════════════════════════════════════╗");
-  console.log("║   Cannapedia Bulk Generator v2 (Queue-driven)    ║");
+  console.log("║   Cannapedia Bulk Generator v3 (Multi-source)    ║");
   console.log("╚══════════════════════════════════════════════════╝\n");
   console.log(`   Model:    ${MODEL}`);
   console.log(`   Batch:    ${batchSize}`);
   console.log(`   Delay:    ${delaySeconds}s`);
   if (categoryFilter) console.log(`   Category: ${categoryFilter}`);
   if (retryFailed) console.log(`   Mode:     retry-failed`);
+  if (skipVerify) console.log(`   Verify:   SKIPPED`);
   console.log();
 
-  // Select items to process
   let candidates = queue.concepts.filter((c) => {
     if (c.status === "completed" || c.status === "skipped") return false;
     if (c.status === "failed" && !retryFailed) return false;
@@ -207,6 +197,7 @@ async function main() {
 
   let successCount = 0;
   let failCount = 0;
+  let pendingCount = 0;
 
   for (let i = 0; i < toProcess.length; i++) {
     const item = toProcess[i];
@@ -219,13 +210,13 @@ async function main() {
     item.attempts++;
 
     try {
-      // Step 1: Aliases
+      // Aliases
       process.stdout.write("      Aliases... ");
       const specificAliases = await generateSearchAliases(item.name, genAI);
       const allTerms = [item.name, ...specificAliases];
       console.log(`${allTerms.length} terms`);
 
-      // Step 2: RAG
+      // Archive RAG
       process.stdout.write("      RAG... ");
       const broadTerms: string[] = [];
       const catHebrew = CATEGORY_HEBREW[item.categorySlug];
@@ -234,12 +225,39 @@ async function main() {
       const ragResult = retrieve(item.name, specificAliases, broadTerms);
       const hasRag = ragResult.chunks.length > 0;
       const ragContext = formatContextForPrompt(ragResult);
-      const ragTag = hasRag
-        ? `${ragResult.matchedArticles} articles, ${ragResult.chunks.length} chunks`
-        : "none (global AI)";
-      console.log(ragTag);
+      console.log(
+        hasRag
+          ? `${ragResult.matchedArticles} articles, ${ragResult.chunks.length} chunks`
+          : "none"
+      );
 
-      // Step 3: Generate
+      // Wikipedia
+      process.stdout.write("      Wiki... ");
+      const wikiResult = await fetchWikipediaContext(allTerms, item.name);
+      const hasWiki = wikiResult.context.length > 0;
+      console.log(hasWiki ? `${wikiResult.sources.length} articles` : "none");
+
+      // Live Magazine
+      process.stdout.write("      LiveMag... ");
+      const liveMagResult = await fetchLiveMagazineContext(allTerms, item.name);
+      const hasLiveMag = liveMagResult.context.length > 0;
+      console.log(hasLiveMag ? `${liveMagResult.sources.length} articles` : "none");
+
+      // Google Search
+      process.stdout.write("      Google... ");
+      const googleResult = await fetchGoogleSearchContext(allTerms, item.name);
+      const hasGoogle = googleResult.context.length > 0;
+      console.log(hasGoogle ? `${googleResult.sources.length} results` : "none");
+
+      const combinedContext = buildCombinedContext({
+        ragContext,
+        liveMagazineContext: liveMagResult.context,
+        wikiContext: wikiResult.context,
+        googleContext: googleResult.context,
+      });
+      const hasCombinedContext = combinedContext.length > 0;
+
+      // Generate
       process.stdout.write("      Generating... ");
       const model = genAI.getGenerativeModel({
         model: MODEL,
@@ -250,7 +268,7 @@ async function main() {
         },
       });
 
-      const prompt = buildPrompt(item.name, item.categorySlug, ragContext);
+      const prompt = buildPrompt(item.name, item.categorySlug, combinedContext);
       const result = await model.generateContent(prompt);
       const text = result.response.text();
 
@@ -261,31 +279,76 @@ async function main() {
         throw new Error("JSON parse failed");
       }
 
-      // Step 4: Post-process
       const slug = (concept.slug as string) || slugify(item.name);
       concept.slug = slug;
       concept.categorySlug = item.categorySlug;
 
-      if (!hasRag) {
-        concept.needsHumanReview = true;
+      // Merge sources
+      const existingSources = (concept.sources as Array<{ title: string; url: string; date: string }>) ?? [];
+      const allSources = [...existingSources];
+      const existingUrls = new Set(allSources.map((s) => s.url));
+
+      for (const src of [...ragResult.sources, ...liveMagResult.sources, ...wikiResult.sources, ...googleResult.sources]) {
+        if (!existingUrls.has(src.url)) {
+          allSources.push(src);
+          existingUrls.add(src.url);
+        }
+      }
+      concept.sources = allSources;
+
+      if (!hasCombinedContext) {
         concept.sourceType = "global_ai";
       } else {
-        concept.needsHumanReview = false;
-        concept.sourceType = "rag";
-        if (!concept.sources || (concept.sources as unknown[]).length === 0) {
-          concept.sources = ragResult.sources;
-        }
+        concept.sourceType = hasRag ? "rag" : "wikipedia";
       }
 
       if (allTerms.length > 0) {
         concept.searchAliases = allTerms;
       }
 
-      // Step 5: Save content
+      console.log("done");
+
+      // Fact-check
+      if (!skipVerify) {
+        process.stdout.write("      Verifying... ");
+        const fcResult = await factCheck(concept, combinedContext, genAI);
+        concept.confidenceScore = fcResult.confidenceScore;
+        concept.unverifiedClaims = fcResult.unverifiedClaims;
+
+        const needsReview =
+          fcResult.confidenceScore < 0.85 ||
+          fcResult.riskLevel === "high" ||
+          !hasCombinedContext;
+
+        if (needsReview) {
+          concept.verificationStatus = "pending";
+          concept.needsHumanReview = true;
+          console.log(`PENDING (${Math.round(fcResult.confidenceScore * 100)}%, ${fcResult.riskLevel})`);
+          pendingCount++;
+
+          await notifyReview({
+            conceptName: (concept.title as string) || item.name,
+            slug,
+            categorySlug: item.categorySlug,
+            confidenceScore: fcResult.confidenceScore,
+            riskLevel: fcResult.riskLevel,
+            unverifiedClaims: fcResult.unverifiedClaims,
+            sourcesConsulted: allSources.map((s) => (s as { title: string }).title),
+          });
+        } else {
+          concept.verificationStatus = "verified";
+          concept.needsHumanReview = false;
+          console.log(`VERIFIED (${Math.round(fcResult.confidenceScore * 100)}%)`);
+        }
+      } else {
+        concept.verificationStatus = "verified";
+        concept.needsHumanReview = false;
+      }
+
+      // Save
       const outPath = path.join(CONTENT_DIR, `${slug}.json`);
       fs.writeFileSync(outPath, JSON.stringify(concept, null, 2), "utf-8");
 
-      // Step 6: Update queue
       item.status = "completed";
       item.completedAt = new Date().toISOString();
       item.lastError = null;
@@ -293,13 +356,14 @@ async function main() {
       saveQueue(queue);
 
       const sections = (concept.sections as unknown[])?.length ?? 0;
+      const srcParts = [hasRag && "RAG", hasWiki && "Wiki", hasLiveMag && "Mag", hasGoogle && "Google"].filter(Boolean);
       console.log(
-        `done (${sections} sections, ${hasRag ? "RAG" : "GLOBAL"})`
+        `      ✅ ${sections} sections (${srcParts.join("+") || "GLOBAL"})`
       );
       successCount++;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.log(`FAILED: ${msg}`);
+      console.log(`      ❌ FAILED: ${msg}`);
 
       item.status = item.attempts >= MAX_ATTEMPTS ? "failed" : "pending";
       item.lastError = msg;
@@ -308,7 +372,6 @@ async function main() {
 
       failCount++;
 
-      // Exponential backoff on API errors
       if (msg.includes("429") || msg.includes("500") || msg.includes("503")) {
         const backoff = delaySeconds * Math.pow(2, item.attempts - 1);
         console.log(`      Rate limited — backing off ${backoff}s`);
@@ -317,18 +380,16 @@ async function main() {
       }
     }
 
-    // Inter-concept delay
     if (i < toProcess.length - 1) {
       await sleep(delaySeconds);
     }
   }
 
-  // ── Summary ─────────────────────────────────────────────────────────
   console.log(`\n${"─".repeat(60)}\n`);
   console.log("╔══════════════════════════════════════════════════╗");
   console.log("║   Batch Complete                                 ║");
   console.log("╚══════════════════════════════════════════════════╝\n");
-  console.log(`   Succeeded:  ${successCount}`);
+  console.log(`   Succeeded:  ${successCount} (${pendingCount} pending review)`);
   console.log(`   Failed:     ${failCount}`);
 
   const remaining = queue.concepts.filter((c) => c.status === "pending").length;

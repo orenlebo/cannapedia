@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import type { ConceptData } from "@/data/concepts";
 import type { MatchedProduct } from "@/utils/productMatcher";
+import ReportError from "./ReportError";
 
 interface Props {
   concept: ConceptData;
@@ -134,6 +135,13 @@ export default function ConceptClient({ concept, products }: Props) {
           </div>
         </motion.section>
       )}
+
+      <motion.div variants={fadeIn}>
+        <ReportError
+          conceptSlug={concept.slug}
+          conceptTitle={concept.title}
+        />
+      </motion.div>
 
       {products.length > 0 && (
         <motion.section id="products-israel" variants={fadeIn}>

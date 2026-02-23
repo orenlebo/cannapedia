@@ -40,7 +40,10 @@ export interface ConceptData {
   sources?: SourceArticle[];
   searchAliases?: string[];
   needsHumanReview?: boolean;
-  sourceType?: "rag" | "global_ai" | "manual";
+  sourceType?: "rag" | "global_ai" | "manual" | "wikipedia";
+  verificationStatus?: "verified" | "pending" | "flagged";
+  confidenceScore?: number;
+  unverifiedClaims?: string[];
   schema: {
     medicalName: string;
     alternateName?: string[];
@@ -184,23 +187,47 @@ const categories: CategoryData[] = [
 const categoriesBySlug = new Map(categories.map((c) => [c.slug, c]));
 
 // ---------------------------------------------------------------------------
+// Verification filter — excludes pending-verification concepts from builds
+// ---------------------------------------------------------------------------
+
+function isPublishable(concept: ConceptData): boolean {
+  return concept.verificationStatus !== "pending";
+}
+
+// ---------------------------------------------------------------------------
 // Public API — concepts
 // ---------------------------------------------------------------------------
 
 export function getConceptBySlug(slug: string): ConceptData | undefined {
-  return readConceptFile(slug);
+  const concept = readConceptFile(slug);
+  if (!concept) return undefined;
+  return isPublishable(concept) ? concept : undefined;
 }
 
-export function getAllConcepts(): ConceptData[] {
-  return loadAllConceptFiles();
+/**
+ * @param includeUnverified Pass true to include pending-verification concepts
+ *   (used by admin scripts, not by the public build).
+ */
+export function getAllConcepts(includeUnverified = false): ConceptData[] {
+  const all = loadAllConceptFiles();
+  return includeUnverified ? all : all.filter(isPublishable);
 }
 
-export function getAllSlugs(): string[] {
-  return readAllSlugsFromDisk();
+export function getAllSlugs(includeUnverified = false): string[] {
+  if (includeUnverified) return readAllSlugsFromDisk();
+  return loadAllConceptFiles()
+    .filter(isPublishable)
+    .map((c) => c.slug);
 }
 
-export function getConceptsByCategory(categorySlug: string): ConceptData[] {
-  return loadAllConceptFiles().filter((c) => c.categorySlug === categorySlug);
+export function getConceptsByCategory(
+  categorySlug: string,
+  includeUnverified = false
+): ConceptData[] {
+  const all = loadAllConceptFiles().filter(
+    (c) => c.categorySlug === categorySlug
+  );
+  return includeUnverified ? all : all.filter(isPublishable);
 }
 
 // ---------------------------------------------------------------------------
