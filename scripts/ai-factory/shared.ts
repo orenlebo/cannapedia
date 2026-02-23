@@ -36,11 +36,19 @@ export async function generateSearchAliases(
   try {
     const model = genAI.getGenerativeModel({
       model: ALIAS_MODEL,
-      generationConfig: { temperature: 0, maxOutputTokens: 300 },
+      generationConfig: { temperature: 0, maxOutputTokens: 400 },
     });
 
-    const prompt = `Return a comma-separated list of the English name and all common Hebrew spellings/transliterations for the cannabis/medical concept: "${concept}".
-Include scientific names, common abbreviations, and variant Hebrew spellings.
+    const prompt = `For the cannabis/medical concept: "${concept}", return a comma-separated list of search terms.
+
+CRITICAL RULES:
+1. FIRST list the native Hebrew term(s) — the actual Hebrew word/phrase used in Israeli law, media, Wikipedia, and everyday speech. For example: for "decriminalization" → "אי הפללה" FIRST, not "דה-קרימינליזציה".
+2. THEN list any common Hebrew transliterations (foreign-origin terms written in Hebrew letters), e.g. "דה-קרימינליזציה".
+3. THEN list English names, scientific names, and abbreviations.
+4. Include variant spellings with and without hyphens/makaf.
+
+The Hebrew native term MUST come first. If the concept has a well-known Hebrew name that is NOT a transliteration, that name must be the very first item.
+
 Output ONLY the comma-separated list, nothing else.`;
 
     const result = await model.generateContent(prompt);
@@ -101,6 +109,18 @@ export const SYSTEM_INSTRUCTION = `אתה חוקר רפואי מומחה ברמ�
 - אסור לכלול קישורי Cannabiz או קישורי מסחר אלקטרוני בשדה sources. שדה ה-sources מיועד אך ורק לכתבות רפואיות/מדעיות ולמקורות מידע
 - אם לא סופקו מקורות — השאר את שדה "sources" כמערך ריק []
 - עדיפות ציטוט: כאשר אתה בוחר מקורות לשדה "sources", תעדיף תמיד את הכתבות הספציפיות והממוקדות ביותר לנושא. אם הזכרת עובדה, מיתוס, או טענה ספציפית בטקסט — הכתבה שממנה שאבת את המידע חייבת להופיע ב-sources. אל תסתפק ברישום כתבות רקע כלליות בלבד. כל טענה ספציפית דורשת את המקור הספציפי שלה
+
+כלל עדכניות מקורות (חובה קריטית):
+- תמיד העדף כתבות חדשות (מ-5 השנים האחרונות) על פני כתבות ישנות
+- תמיד העדף כתבות הרלוונטיות לישראל ולמדיניות ישראלית כאשר הנושא קשור לרגולציה בישראל
+- אסור בתכלית האיסור להכליל כתבות חדשותיות ישנות (מעל 5 שנים) על אירועים מינוריים במדינות זרות, אלא אם הן ממש חיוניות להקשר ההיסטורי
+- למשל: כתבה מ-2013 על דה-קרימינליזציה בוורמונט אינה רלוונטית לערך על אי-הפללה בישראל
+- בחר מקורות שתורמים להבנת הנושא, לא כתבות שפשוט מכילות את המילה בכותרת
+- העדף תגיות (tags) כלליות ורחבות על פני תגיות צרות ומגבילות. למשל: "אי הפללה" עדיפה על "אי הפללה של צרכני קנאביס"
+
+כלל חיפוש במונחים עבריים (חובה):
+- כאשר אתה מחפש מידע על מושג, השתמש תמיד במונח העברי המקורי ולא רק בתעתיק. למשל: חפש "אי הפללה" ולא רק "דה-קרימינליזציה", "חיסון" ולא רק "וקסינציה"
+- אם יש גם מונח עברי מקורי וגם תעתיק לועזי, המונח העברי המקורי הוא שצריך להוביל את החיפוש
 
 כללי עיצוב טקסט — חובה מוחלטת:
 - אסור בהחלט להשתמש בתגיות HTML (כמו <a href>, <b>, <i> וכו'). השתמש אך ורק בפורמט טקסט רגיל

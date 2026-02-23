@@ -85,10 +85,10 @@ export async function fetchLiveMagazineContext(
   context: string;
   sources: { title: string; url: string; date: string }[];
 }> {
-  const hebrewTerms = [
-    conceptName,
-    ...aliases.filter((a) => /[\u0590-\u05FF]/.test(a)),
-  ].slice(0, 3);
+  const hebrewAliases = aliases.filter((a) => /[\u0590-\u05FF]/.test(a));
+  const hebrewTerms = hebrewAliases.length > 0
+    ? hebrewAliases.slice(0, 4)
+    : [conceptName];
 
   const seenIds = new Set<number>();
   const articles: LiveMagazineArticle[] = [];

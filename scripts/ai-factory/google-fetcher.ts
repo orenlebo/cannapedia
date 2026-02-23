@@ -145,11 +145,14 @@ export async function fetchGoogleSearchContext(
 
   const queries: string[] = [];
 
-  const primaryHebrew = hebrewAliases[0] || conceptName;
-  queries.push(`"${primaryHebrew}" קנאביס ישראל`);
+  // Search with each unique Hebrew alias (native terms first, then transliterations)
+  const hebrewTerms = hebrewAliases.length > 0 ? hebrewAliases : [conceptName];
+  for (const term of hebrewTerms.slice(0, 3)) {
+    queries.push(`"${term}" קנאביס`);
+  }
 
   if (englishAliases.length > 0) {
-    queries.push(`"${englishAliases[0]}" cannabis Israel law`);
+    queries.push(`"${englishAliases[0]}" cannabis`);
   }
 
   const seenUrls = new Set<string>();
