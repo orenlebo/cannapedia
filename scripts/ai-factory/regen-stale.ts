@@ -3,10 +3,11 @@
  * Now includes multi-source retrieval, fact-checking, and review workflow.
  *
  * Usage:
- *   npx tsx scripts/ai-factory/regen-stale.ts              # dry-run (list only)
- *   npx tsx scripts/ai-factory/regen-stale.ts --run         # actually regenerate
- *   npx tsx scripts/ai-factory/regen-stale.ts --run --batch 5
- *   npx tsx scripts/ai-factory/regen-stale.ts --run --skip-verify
+ *   npx tsx scripts/ai-factory/regen-stale.ts              # dry-run — list stale only
+ *   npx tsx scripts/ai-factory/regen-stale.ts --all        # dry-run — list ALL pages
+ *   npx tsx scripts/ai-factory/regen-stale.ts --run        # regenerate stale
+ *   npx tsx scripts/ai-factory/regen-stale.ts --all --run  # regenerate ALL
+ *   npx tsx scripts/ai-factory/regen-stale.ts --all --run --batch 50 --delay 15 --skip-verify
  */
 
 import dotenv from "dotenv";
@@ -42,6 +43,7 @@ const CUTOFF_YEAR = 2020;
 
 const args = process.argv.slice(2);
 const doRun = args.includes("--run");
+const doAll = args.includes("--all");
 const skipVerify = args.includes("--skip-verify");
 const batchIdx = args.indexOf("--batch");
 const batchSize =
@@ -61,25 +63,23 @@ interface StaleEntry {
   newestSource: number;
 }
 
-function findStalePages(): StaleEntry[] {
+function findPages(all: boolean): StaleEntry[] {
   const files = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith(".json"));
-  const stale: StaleEntry[] = [];
+  const entries: StaleEntry[] = [];
 
   for (const file of files) {
     const data = JSON.parse(
       fs.readFileSync(path.join(CONTENT_DIR, file), "utf-8")
     );
     const sources = data.sources || [];
-    if (sources.length === 0) continue;
 
     const years = sources
       .map((s: { date?: string }) => new Date(s.date || "2000").getFullYear())
       .filter((y: number) => y > 1900);
-    if (years.length === 0) continue;
+    const newest = years.length > 0 ? Math.max(...years) : 0;
 
-    const newest = Math.max(...years);
-    if (newest < CUTOFF_YEAR) {
-      stale.push({
+    if (all || newest < CUTOFF_YEAR) {
+      entries.push({
         slug: data.slug || file.replace(".json", ""),
         categorySlug: data.categorySlug || "unknown",
         name: data.title || data.slug || file.replace(".json", ""),
@@ -88,7 +88,7 @@ function findStalePages(): StaleEntry[] {
     }
   }
 
-  return stale.sort((a, b) => a.newestSource - b.newestSource);
+  return entries.sort((a, b) => a.newestSource - b.newestSource);
 }
 
 function sleep(seconds: number): Promise<void> {
@@ -96,22 +96,23 @@ function sleep(seconds: number): Promise<void> {
 }
 
 async function main() {
-  const stale = findStalePages();
-  console.log(`\n🔍  Found ${stale.length} stale pages (newest source < ${CUTOFF_YEAR}):\n`);
+  const pages = findPages(doAll);
+  const label = doAll ? "total" : `stale (newest source < ${CUTOFF_YEAR})`;
+  console.log(`\n🔍  Found ${pages.length} ${label} pages:\n`);
 
-  for (const entry of stale) {
+  for (const entry of pages) {
     console.log(
-      `   ${entry.slug.padEnd(45)} ${entry.categorySlug.padEnd(30)} newest: ${entry.newestSource}`
+      `   ${entry.slug.padEnd(45)} ${entry.categorySlug.padEnd(30)} newest: ${entry.newestSource || "—"}`
     );
   }
 
   if (!doRun) {
     console.log(`\n   Dry run. Pass --run to regenerate.`);
-    console.log(`   npx tsx scripts/ai-factory/regen-stale.ts --run --batch 10\n`);
+    console.log(`   npx tsx scripts/ai-factory/regen-stale.ts --run --all --batch 10 --skip-verify\n`);
     return;
   }
 
-  const toProcess = stale.slice(0, batchSize);
+  const toProcess = pages.slice(0, batchSize);
   console.log(
     `\n🚀  Regenerating ${toProcess.length} pages (delay: ${delaySeconds}s)...\n`
   );
@@ -283,7 +284,7 @@ async function main() {
 
   console.log(`\n${"─".repeat(50)}`);
   console.log(`✅  Success: ${success} (${pending} pending review)  |  ❌ Failed: ${fail}`);
-  console.log(`Remaining stale: ${stale.length - toProcess.length}\n`);
+  console.log(`Remaining: ${pages.length - toProcess.length}\n`);
 }
 
 main().catch((err) => {

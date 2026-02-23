@@ -1,209 +1,86 @@
 /**
- * Google Custom Search Fetcher — Retrieves recent web/news results
- * for use as supplementary context alongside RAG and Wikipedia.
+ * Google Search Fetcher — Uses Gemini's built-in Google Search grounding
+ * to retrieve fresh web information for concept verification.
  *
- * Requires GOOGLE_CSE_API_KEY and GOOGLE_CSE_ID in .env.local.
+ * Uses the existing GEMINI_API_KEY — no additional API keys or setup needed.
  */
 
-import striptags from "striptags";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-interface GoogleSearchItem {
-  title: string;
-  link: string;
-  snippet: string;
-  pagemap?: {
-    metatags?: Array<Record<string, string>>;
-  };
-}
-
-interface GoogleSearchResponse {
-  items?: GoogleSearchItem[];
-}
-
-export interface GoogleSearchResult {
+export interface GoogleSearchSource {
   title: string;
   url: string;
-  snippet: string;
   date: string;
-  fullText?: string;
 }
 
-const USER_AGENT = "Cannapedia/1.0 (https://cannapedia.co.il)";
-const MAX_FULL_TEXT_LENGTH = 3000;
-
-async function searchGoogle(
-  query: string,
-  apiKey: string,
-  cseId: string,
-  dateRestrict = "y3"
-): Promise<GoogleSearchItem[]> {
-  const params = new URLSearchParams({
-    key: apiKey,
-    cx: cseId,
-    q: query,
-    num: "5",
-    dateRestrict,
-  });
-
-  try {
-    const res = await fetch(
-      `https://www.googleapis.com/customsearch/v1?${params}`,
-      { headers: { "User-Agent": USER_AGENT } }
-    );
-    if (!res.ok) {
-      console.log(`   ⚠️  Google CSE returned ${res.status} for query: ${query}`);
-      return [];
-    }
-    const data = (await res.json()) as GoogleSearchResponse;
-    return data.items ?? [];
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.log(`   ⚠️  Google CSE error: ${msg}`);
-    return [];
-  }
-}
-
-async function fetchPageText(url: string): Promise<string | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
-
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        Accept: "text/html",
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-
-    if (!res.ok) return null;
-
-    const contentType = res.headers.get("content-type") ?? "";
-    if (!contentType.includes("text/html")) return null;
-
-    const html = await res.text();
-    const text = striptags(html)
-      .replace(/\s+/g, " ")
-      .trim();
-
-    if (text.length < 100) return null;
-
-    return text.length > MAX_FULL_TEXT_LENGTH
-      ? text.slice(0, MAX_FULL_TEXT_LENGTH) + "..."
-      : text;
-  } catch {
-    return null;
-  }
-}
-
-function extractDate(item: GoogleSearchItem): string {
-  const metatags = item.pagemap?.metatags?.[0];
-  const candidates = [
-    metatags?.["article:published_time"],
-    metatags?.["og:updated_time"],
-    metatags?.["date"],
-  ];
-
-  for (const c of candidates) {
-    if (c) {
-      const d = new Date(c);
-      if (!isNaN(d.getTime())) return d.toISOString().split("T")[0];
-    }
-  }
-
-  const snippetMatch = item.snippet.match(
-    /(\d{1,2})\s+(ב?(?:ינואר|פברואר|מרץ|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר))\s+(\d{4})/
-  );
-  if (snippetMatch) {
-    return `${snippetMatch[3]}-01-01`;
-  }
-
-  return new Date().toISOString().split("T")[0];
-}
+const SEARCH_MODEL = "gemini-2.0-flash";
 
 /**
- * Fetch Google Custom Search results for a concept.
- * Returns formatted context string ready for the Gemini prompt.
+ * Fetch fresh web context for a concept using Gemini's Google Search grounding.
+ * Returns a formatted context string and extracted sources.
  */
 export async function fetchGoogleSearchContext(
   aliases: string[],
   conceptName: string
 ): Promise<{
   context: string;
-  sources: { title: string; url: string; date: string }[];
+  sources: GoogleSearchSource[];
 }> {
-  const apiKey = process.env.GOOGLE_CSE_API_KEY;
-  const cseId = process.env.GOOGLE_CSE_ID;
-
-  if (!apiKey || !cseId) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
     return { context: "", sources: [] };
   }
 
   const hebrewAliases = aliases.filter((a) => /[\u0590-\u05FF]/.test(a));
-  const englishAliases = aliases.filter((a) => /[a-zA-Z]/.test(a));
+  const primaryHebrew =
+    hebrewAliases[0] || conceptName;
+  const secondaryTerms = hebrewAliases.slice(1, 3).join(", ");
 
-  const queries: string[] = [];
+  const searchQuery = secondaryTerms
+    ? `מצא מידע עדכני (מ-2020 ואילך) על "${primaryHebrew}" (${secondaryTerms}) בהקשר של קנאביס בישראל. כלול: מצב חוקי/רגולטורי נוכחי, עובדות מפתח, שינויים אחרונים, וסטטיסטיקות. התמקד במידע ישראלי ומדעי.`
+    : `מצא מידע עדכני (מ-2020 ואילך) על "${primaryHebrew}" בהקשר של קנאביס רפואי. כלול: ממצאי מחקר עדכניים, מנגנון פעולה, שימושים רפואיים, ומצב רגולטורי בישראל.`;
 
-  // Search with each unique Hebrew alias (native terms first, then transliterations)
-  const hebrewTerms = hebrewAliases.length > 0 ? hebrewAliases : [conceptName];
-  for (const term of hebrewTerms.slice(0, 3)) {
-    queries.push(`"${term}" קנאביס`);
-  }
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: SEARCH_MODEL,
+      tools: [{ googleSearch: {} } as any],
+    });
 
-  if (englishAliases.length > 0) {
-    queries.push(`"${englishAliases[0]}" cannabis`);
-  }
+    const result = await model.generateContent(searchQuery);
+    const text = result.response.text();
 
-  const seenUrls = new Set<string>();
-  const results: GoogleSearchResult[] = [];
-
-  for (const query of queries) {
-    const items = await searchGoogle(query, apiKey, cseId);
-    for (const item of items) {
-      if (seenUrls.has(item.link)) continue;
-      seenUrls.add(item.link);
-
-      results.push({
-        title: item.title,
-        url: item.link,
-        snippet: item.snippet,
-        date: extractDate(item),
-      });
+    if (!text || text.length < 50) {
+      return { context: "", sources: [] };
     }
-  }
 
-  if (results.length === 0) {
+    // Extract grounding sources
+    const sources: GoogleSearchSource[] = [];
+    const meta = (result.response.candidates?.[0] as any)?.groundingMetadata;
+    if (meta?.groundingChunks) {
+      for (const chunk of meta.groundingChunks) {
+        if (chunk.web?.uri && chunk.web?.title) {
+          sources.push({
+            title: chunk.web.title,
+            url: chunk.web.uri,
+            date: new Date().toISOString().split("T")[0],
+          });
+        }
+      }
+    }
+
+    const header = `\n\nמקורות מחיפוש Google (${sources.length} מקורות, מידע עדכני):
+⚠️ מידע זה נשלף בזמן אמת מהאינטרנט באמצעות Google Search ומשקף את המצב העדכני ביותר.\n\n`;
+
+    const contextBlock = `--- מקור Google Search [${new Date().toISOString().split("T")[0]}] ---\n${text}`;
+
+    return {
+      context: header + contextBlock,
+      sources,
+    };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.log(`   ⚠️  Google Search grounding error: ${msg}`);
     return { context: "", sources: [] };
   }
-
-  const topResults = results.slice(0, 5);
-
-  const fetchTargets = topResults.slice(0, 3);
-  const fullTexts = await Promise.all(
-    fetchTargets.map((r) => fetchPageText(r.url))
-  );
-  for (let i = 0; i < fetchTargets.length; i++) {
-    if (fullTexts[i]) {
-      fetchTargets[i].fullText = fullTexts[i]!;
-    }
-  }
-
-  const sources = topResults.map((r) => ({
-    title: r.title,
-    url: r.url,
-    date: r.date,
-  }));
-
-  const contextParts = topResults.map((r, i) => {
-    const body = r.fullText || r.snippet;
-    return `--- מקור Google Search ${i + 1} [${r.date}] "${r.title}" ---\nExact URL: ${r.url}\n${body}`;
-  });
-
-  const header = `\n\nמקורות מחיפוש Google (${topResults.length} תוצאות עדכניות):\n⚠️ מידע מחיפוש אינטרנט הוא בדרך כלל העדכני ביותר, במיוחד לגבי רגולציה, חוקים ונתונים עובדתיים.\n\n`;
-
-  return {
-    context: header + contextParts.join("\n\n"),
-    sources,
-  };
 }
