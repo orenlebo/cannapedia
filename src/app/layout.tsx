@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Rubik } from "next/font/google";
 import TopHeader from "@/components/TopHeader";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
 import "./globals.css";
+
+const GA_ID = "G-4TBPZK07S5";
 
 const rubik = Rubik({
   subsets: ["latin", "hebrew"],
@@ -71,6 +74,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl">
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="gtag-init" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}
+      </Script>
       <body className={`${rubik.variable} font-sans antialiased`}>
         <TopHeader />
         <main className="mx-auto min-h-screen max-w-3xl px-4 pb-8 pt-4">
