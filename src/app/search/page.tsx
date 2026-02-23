@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getAllConcepts } from "@/data/concepts";
 import SearchClient from "./SearchClient";
 import type { SearchableConcept } from "./SearchClient";
@@ -36,5 +37,9 @@ export default function SearchPage() {
     };
   });
 
-  return <SearchClient concepts={searchableConcepts} />;
+  return (
+    <Suspense fallback={<div className="p-6 text-center text-muted-foreground">טוען חיפוש...</div>}>
+      <SearchClient concepts={searchableConcepts} />
+    </Suspense>
+  );
 }
